@@ -15,7 +15,7 @@ Product::Product(const std::string category, const std::string name, double pric
 
 Product::~Product()
 {
-
+  
 }
 
 
@@ -31,6 +31,7 @@ std::string Product::getName() const
 
 void Product::subtractQty(int num)
 {
+    cout << "product.cpp 34" << endl;
     qty_ -= num;
 }
 

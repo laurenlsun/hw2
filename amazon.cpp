@@ -9,6 +9,7 @@
 #include "db_parser.h"
 #include "product_parser.h"
 #include "util.h"
+#include "mydatastore.h"
 
 using namespace std;
 struct ProdNameSorter {
@@ -29,7 +30,7 @@ int main(int argc, char* argv[])
      * Declare your derived DataStore object here replacing
      *  DataStore type to your derived type
      ****************/
-    DataStore ds;
+    MyDataStore ds;
 
 
 
@@ -74,8 +75,8 @@ int main(int argc, char* argv[])
                 string term;
                 vector<string> terms;
                 while(ss >> term) {
-                    term = convToLower(term);
-                    terms.push_back(term);
+                  term = convToLower(term);
+                  terms.push_back(term);
                 }
                 hits = ds.search(terms, 0);
                 displayProducts(hits);
@@ -98,6 +99,81 @@ int main(int argc, char* argv[])
                     ofile.close();
                 }
                 done = true;
+            }
+            else if ( cmd == "ADD") {
+                string username;
+                int hit_result_index;
+                if(ss >> username) {
+                    // check if username exists
+                    std::map<std::string, User*> users = ds.getUsers();
+                    //   cout << "Printing users:" << endl;
+                    // for (map<string,User*>::iterator it=users.begin(); it!=users.end(); it++) {
+                    //   cout << it->first << endl;
+                    // }
+                    std::map<std::string, User*>::iterator loc=users.find(username);
+                    if (loc==users.end()) { // user doesn't exist
+                      cout << "Invalid request" << endl;
+                    }
+                    else {
+                      // cout << username << " valid" << endl;
+                      if (ss >> hit_result_index) { //cin hit_result_index
+                        //check if index is valid
+                        if (hit_result_index <= hits.size()) {
+                          // cout << hit_result_index << " valid" << endl;
+                          // cout << "hits: " << endl;
+                          // for (int i = 0; i< hits.size(); i++) {
+                          //   cout << hits[i]->getName() << ", " <<  endl;
+                          // }
+                          // cout << "adding product at index " << hit_result_index-1 << endl;
+                          User* u = loc->second;
+                          u->addToCart(hits[hit_result_index-1]);
+                        }
+                        else { cout << "Invalid Request" << endl;}
+                      }
+                      else { // no index provided
+                        cout << "Invalid Request" << endl;
+                      }
+                    }
+                }
+                else { // no username or index provided
+                  cout << "Invalid Request" << endl;
+                }
+            }
+            else if (cmd == "VIEWCART") {
+              string username;
+              if(ss >> username) {
+                // check if username exists
+                std::map<std::string, User*>users = ds.getUsers();
+                std::map<std::string, User*>::iterator loc=users.find(username);
+                if (loc==users.end()) { // user doesn't exist
+                  cout << "Invalid username" << endl;
+                }
+                else { // username does exist
+                  loc->second->viewCart();
+                }
+              }
+              else { // couldn't cin username
+                cout << "Invalid Request" << endl;
+              }
+            }
+            else if (cmd == "BUYCART") {
+              string username;
+              if(ss >> username) {
+                // check if username exists
+                std::map<std::string, User*> users = ds.getUsers();
+                std::map<std::string, User*>::iterator loc=users.find(username);
+                if (loc==users.end()) { // user doesn't exist
+                  cout << "Invalid username" << endl;
+                }
+                else { // username does exist
+                  User* u = loc->second;
+                  // cout << "user: " << u->getName() << endl;
+                  u->buyCart();
+                }
+              }
+              else { // couldn't cin username
+                cout << "Invalid Request" << endl;
+              }
             }
 	    /* Add support for other commands here */
 
